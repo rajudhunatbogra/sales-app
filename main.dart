@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-void main()=>runApp(MaterialApp(debugShowCheckedModeBanner:false,home:SalesPage()));
+void main()=>runApp(MaterialApp(debugShowCheckedModeBanner:false,theme:ThemeData(primaryColor:Colors.amber),home:SalesPage()));
 class SalesPage extends StatefulWidget{@override _SalesPageState createState()=>_SalesPageState();}
 class _SalesPageState extends State<SalesPage>{
   final Map<String,TextEditingController> ct={'sl':TextEditingController(),'name':TextEditingController(),'address':TextEditingController(),'phone':TextEditingController(),'itemName':TextEditingController(),'rate':TextEditingController(),'totalW':TextEditingController(),'voriW':TextEditingController(),'fixedW':TextEditingController(),'customK':TextEditingController(),'vori':TextEditingController(),'ana':TextEditingController(),'rati':TextEditingController(),'point':TextEditingController(),'gram':TextEditingController(),'totalBill':TextEditingController(),'cashPaid':TextEditingController(),'bankPaid':TextEditingController(),'oldGoldDetails':TextEditingController(),'oldGoldPrice':TextEditingController(),'advancePaid':TextEditingController(),'dueAmount':TextEditingController(),'paymentStatus':TextEditingController()};
