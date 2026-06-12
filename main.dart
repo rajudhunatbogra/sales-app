@@ -17,13 +17,14 @@ class _SalesPageState extends State<SalesPage> {
     'sl': TextEditingController(), 'name': TextEditingController(),
     'address': TextEditingController(), 'phone': TextEditingController(),
     'itemName': TextEditingController(), 'rate': TextEditingController(),
-    'totalW': TextEditingController(), 'voriW': TextEditingController(),
-    'fixedW': TextEditingController(), 'customK': TextEditingController(),
-    'vori': TextEditingController(), 'ana': TextEditingController(),
-    'rati': TextEditingController(), 'point': TextEditingController(),
-    'gram': TextEditingController(), 'totalBill': TextEditingController(),
-    'cashPaid': TextEditingController(), 'bankPaid': TextEditingController(),
-    'oldGoldDetails': TextEditingController(), 'oldGoldPrice': TextEditingController(),
+    'itemTotalPrice': TextEditingController(), 'totalW': TextEditingController(), 
+    'voriW': TextEditingController(), 'fixedW': TextEditingController(), 
+    'customK': TextEditingController(), 'vori': TextEditingController(), 
+    'ana': TextEditingController(), 'rati': TextEditingController(), 
+    'point': TextEditingController(), 'gram': TextEditingController(),
+    'totalBill': TextEditingController(), 'cashPaid': TextEditingController(), 
+    'bankPaid': TextEditingController(), 'oldVori': TextEditingController(), 
+    'oldRate': TextEditingController(), 'oldGoldPrice': TextEditingController(), 
     'advancePaid': TextEditingController(), 'dueAmount': TextEditingController(),
     'paymentStatus': TextEditingController()
   };
@@ -39,7 +40,7 @@ class _SalesPageState extends State<SalesPage> {
   @override
   void initState() {
     super.initState();
-    for (var k in ['vori', 'ana', 'rati', 'point', 'voriW', 'fixedW', 'totalBill', 'cashPaid', 'bankPaid', 'oldGoldPrice', 'advancePaid']) {
+    for (var k in ['vori', 'ana', 'rati', 'point', 'rate', 'voriW', 'fixedW', 'totalBill', 'cashPaid', 'bankPaid', 'oldVori', 'oldRate', 'advancePaid']) {
       ct[k]?.addListener(_calculate);
     }
   }
@@ -49,20 +50,31 @@ class _SalesPageState extends State<SalesPage> {
     double a = double.tryParse(ct['ana']!.text) ?? 0;
     double r = double.tryParse(ct['rati']!.text) ?? 0;
     double p = double.tryParse(ct['point']!.text) ?? 0;
+    double rate = double.tryParse(ct['rate']!.text) ?? 0;
     double vw = double.tryParse(ct['voriW']!.text) ?? 0;
     double fw = double.tryParse(ct['fixedW']!.text) ?? 0;
 
     double totalVori = v + (a / 16) + (r / 96) + (p / 960);
     double totalGram = totalVori * 11.664;
+    
+    // সোনার মোট দাম অটো হিসাব (ওজন × সোনার দর)
+    double itemPrice = totalVori * rate;
     double totalWages = (totalVori * vw) + fw;
 
     ct['gram']!.text = totalGram > 0 ? totalGram.toStringAsFixed(3) : '';
+    ct['itemTotalPrice']!.text = itemPrice > 0 ? itemPrice.toStringAsFixed(2) : '';
     ct['totalW']!.text = totalWages > 0 ? totalWages.toStringAsFixed(2) : '';
 
+    // পুরাতন সোনার দাম অটো হিসাব (পুরাতন ভরি × পুরাতন দর)
+    double ov = double.tryParse(ct['oldVori']!.text) ?? 0;
+    double or = double.tryParse(ct['oldRate']!.text) ?? 0;
+    double oldPrice = ov * or;
+    ct['oldGoldPrice']!.text = oldPrice > 0 ? oldPrice.toStringAsFixed(2) : '';
+
+    // মোট বাকি এবং পরিশোধ স্ট্যাটাস হিসাব
     double bill = double.tryParse(ct['totalBill']!.text) ?? 0;
     double cash = double.tryParse(ct['cashPaid']!.text) ?? 0;
     double bank = double.tryParse(ct['bankPaid']!.text) ?? 0;
-    double oldPrice = double.tryParse(ct['oldGoldPrice']!.text) ?? 0;
     double adv = double.tryParse(ct['advancePaid']!.text) ?? 0;
 
     double due = bill - (cash + bank + oldPrice + adv);
@@ -81,8 +93,8 @@ class _SalesPageState extends State<SalesPage> {
         'phone': ct['phone']!.text, 'itemName': ct['itemName']!.text, 'carat': selectedCarat,
         'khath': selectedKhath == 'অন্যান্য খাত (নিচে লিখুন)' ? ct['customK']!.text : selectedKhath,
         'weightText': '${ct['vori']!.text.isEmpty ? "০" : ct['vori']!.text} ভরি, ${ct['ana']!.text.isEmpty ? "০" : ct['ana']!.text} আনা, ${ct['rati']!.text.isEmpty ? "০" : ct['rati']!.text} রতি, ${ct['point']!.text.isEmpty ? "০" : ct['point']!.text} পয়েন্ট',
-        'gram': ct['gram']!.text, 'rate': ct['rate']!.text, 'wages': ct['totalW']!.text, 'totalBill': ct['totalBill']!.text, 
-        'cashPaid': ct['cashPaid']!.text, 'bankPaid': ct['bankPaid']!.text, 'oldGoldDetails': ct['oldGoldDetails']!.text, 
+        'gram': ct['gram']!.text, 'rate': ct['rate']!.text, 'itemPrice': ct['itemTotalPrice']!.text, 'wages': ct['totalW']!.text, 'totalBill': ct['totalBill']!.text, 
+        'cashPaid': ct['cashPaid']!.text, 'bankPaid': ct['bankPaid']!.text, 'oldVori': ct['oldVori']!.text, 'oldRate': ct['oldRate']!.text,
         'oldGoldPrice': ct['oldGoldPrice']!.text, 'advancePaid': ct['advancePaid']!.text, 'dueAmount': ct['dueAmount']!.text, 'paymentStatus': ct['paymentStatus']!.text
       });
     });
@@ -124,15 +136,16 @@ class _SalesPageState extends State<SalesPage> {
                     Text('পণ্যের নাম: ${savedSalesList[i]['itemName']} (${savedSalesList[i]['carat']}) | খাত: ${savedSalesList[i]['khath']}'),
                     Divider(),
                     Text('গহনার ওজন (রতিসহ): ${savedSalesList[i]['weightText']}', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                    Text('গ্রামের হিসাবে: ${savedSalesList[i]['gram']} gram | ভরি দর: ৳${savedSalesList[i]['rate']} | মজুরি: ৳${savedSalesList[i]['wages']}'),
+                    Text('গ্রামের হিসাবে: ${savedSalesList[i]['gram']} গ্রাম | ভরি দর: ৳${savedSalesList[i]['rate']} | সোনার দাম: ৳${savedSalesList[i]['itemPrice']}'),
+                    Text('মোট মজুরি: ৳${savedSalesList[i]['wages']}'),
                     Divider(),
                     Text('১. মোট বিল: ৳${savedSalesList[i]['totalBill']}', style: TextStyle(fontWeight: FontWeight.bold)),
                     Text('২. নগদ জমা: ৳${savedSalesList[i]['cashPaid']} | ৩. ব্যাংক জমা: ৳${savedSalesList[i]['bankPaid']}'),
-                    Text('৪. পুরাতন সোনা/রুপা বিবরণ: ${savedSalesList[i]['oldGoldDetails']} (দাম: ৳${savedSalesList[i]['oldGoldPrice']})'),
+                    Text('৪. পুরাতন সোনা ওজন: ${savedSalesList[i]['oldVori']} ভরি | দর: ৳${savedSalesList[i]['oldRate']} | মোট মূল্য: ৳${savedSalesList[i]['oldGoldPrice']}'),
                     Text('৫. অগ্রিম জমা: ৳${savedSalesList[i]['advancePaid']}'),
                     Divider(),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text('বাকি/অবশিষ্ট: ৳${savedSalesList[i]['dueAmount']}', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text('বাকি/অবशिष्ट: ৳${savedSalesList[i]['dueAmount']}', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
                       Container(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), color: savedSalesList[i]['paymentStatus'] == 'পরিশোধিত' ? Colors.green : Colors.orange, child: Text(savedSalesList[i]['paymentStatus'], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
                     ]),
                   ])),
@@ -177,6 +190,7 @@ class _SalesPageState extends State<SalesPage> {
             ]),
             SizedBox(height: 15),
             TextField(controller: ct['rate'], decoration: InputDecoration(labelText: 'সোনার দর (প্রতি ভরি ৳)'), keyboardType: TextInputType.number),
+            TextField(controller: ct['itemTotalPrice'], readOnly: true, decoration: InputDecoration(labelText: 'সোনার মোট দাম অটো (৳)')),
             TextField(controller: ct['voriW'], decoration: InputDecoration(labelText: 'ভরি প্রতি মজুরি (৳)'), keyboardType: TextInputType.number),
             TextField(controller: ct['fixedW'], decoration: InputDecoration(labelText: 'ফিক্সড মজুরি (৳)'), keyboardType: TextInputType.number),
             TextField(controller: ct['totalW'], readOnly: true, decoration: InputDecoration(labelText: 'মোট মজুরি অটো (৳)')),
@@ -193,8 +207,9 @@ class _SalesPageState extends State<SalesPage> {
               TextField(controller: ct['totalBill'], decoration: InputDecoration(labelText: '৩. মোট বিল (টাকা)'), keyboardType: TextInputType.number),
               TextField(controller: ct['cashPaid'], decoration: InputDecoration(labelText: '৪. নগদ টাকা জমা দেওয়ার পরিমাণ'), keyboardType: TextInputType.number),
               TextField(controller: ct['bankPaid'], decoration: InputDecoration(labelText: '৫. মোবাইল ব্যাংক বা সরাসরি ব্যাংকে জমা'), keyboardType: TextInputType.number),
-              TextField(controller: ct['oldGoldDetails'], decoration: InputDecoration(labelText: '৬. পুরাতন স্বর্ণ/রুপা বিবরণ (ওজন/ক্যারেট)')),
-              TextField(controller: ct['oldGoldPrice'], decoration: InputDecoration(labelText: 'পুরাতন স্বর্ণ/রুপার মূল্য (খাদ বাদে)')),
+              TextField(controller: ct['oldVori'], decoration: InputDecoration(labelText: '৬. পুরাতন স্বর্ণ/রুপা ওজন (ভরি)'), keyboardType: TextInputType.number),
+              TextField(controller: ct['oldRate'], decoration: InputDecoration(labelText: 'পুরাতন স্বর্ণ/রুপা জমা দর (ভরি প্রতি ৳)'), keyboardType: TextInputType.number),
+              TextField(controller: ct['oldGoldPrice'], readOnly: true, decoration: InputDecoration(labelText: 'পুরাতন স্বর্ণ/রুপার মোট মূল্য অটো (৳)')),
               TextField(controller: ct['advancePaid'], decoration: InputDecoration(labelText: '৭. অগ্রিম জমা (যদি থাকে)'), keyboardType: TextInputType.number),
               TextField(controller: ct['dueAmount'], readOnly: true, decoration: InputDecoration(labelText: '৮. মোট বাকি/অবशिष्ट (অটো)')),
               TextField(controller: ct['paymentStatus'], readOnly: true, decoration: InputDecoration(labelText: '৯. পরিশোধ স্ট্যাটাস (অটো)')),
