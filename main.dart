@@ -7,7 +7,6 @@ void main() => runApp(MaterialApp(
       home: SalesPage(),
     ));
 
-// ৭ ও ১০ নম্বর পয়েন্ট: প্রতি পণ্যের নাম, ওজন এবং কাস্টম মেটাল বা ক্যারেট অপশন মডেল
 class ProductItem {
   TextEditingController nameCt = TextEditingController();
   TextEditingController voriCt = TextEditingController();
@@ -15,7 +14,7 @@ class ProductItem {
   TextEditingController ratiCt = TextEditingController();
   TextEditingController pointCt = TextEditingController();
   TextEditingController gramCt = TextEditingController();
-  String metalType = 'স্বর্ণ'; // স্বর্ণ, রুপা, প্লাটিনাম
+  String metalType = 'স্বর্ণ'; 
   String carat = '২১ ক্যারেট হলমার্ক';
   bool isGramInput = false;
 }
@@ -34,29 +33,27 @@ class _SalesPageState extends State<SalesPage> {
     'totalBill': TextEditingController(), 'cashPaid': TextEditingController(), 
     'bankPaid': TextEditingController(), 'advancePaid': TextEditingController(), 
     'dueAmount': TextEditingController(), 'paymentStatus': TextEditingController(),
-    // পুরাতন জমার কন্ট্রোলার
     'oldItemName': TextEditingController(),
     'oldVori': TextEditingController(), 'oldAna': TextEditingController(),
     'oldRati': TextEditingController(), 'oldPoint': TextEditingController(), 'oldGram': TextEditingController(),
     'oldRate': TextEditingController(), 'oldGoldPrice': TextEditingController(),
-    // খাঁটি/পাকা জমার কন্ট্রোলার
     'pakaVori': TextEditingController(), 'pakaAna': TextEditingController(),
     'pakaRati': TextEditingController(), 'pakaPoint': TextEditingController(), 'pakaGram': TextEditingController(),
     'pakaRate': TextEditingController(), 'pakaGoldPrice': TextEditingController(),
   };
-  // ১৪ নম্বর পয়েন্ট: বাংলা ও ইংরেজি অনুবাদের জন্য কাস্টম ডাটা ডিকশনারি ম্যাপ
+
   bool isEnglish = false; 
-  
   String selectedKhath = 'উৎপাদিত নতুন গহনা';
   String selectedCarat = '২১ ক্যারেট হলমার্ক';
   String oldMetalType = 'স্বর্ণ';
   String pakaMetalType = 'স্বর্ণ';
   
+  final List<String> khathOptions = ['উৎপাদিত নতুন গহনা', 'কেনা নতুন গহনা', 'পুরাতন গহনা', 'বন্ধকী গহনা', 'অন্যান্য খাত (নিচে লিখুন)'];
+  final List<String> caratOptions = ['১৮ ক্যারেট বাংলা', '১৮ ক্যারেট কেডিয়াম', '২১ ক্যারেট বাংলা', '২১ ক্যারেট কেডিয়াম', '২১ ক্যারেট হলমার্ক', '২২ ক্যারেট হলমার্ক'];
+  
   List<Map<String, dynamic>> savedSalesList = [];
   List<Map<String, dynamic>> filteredSalesList = [];
   List<ProductItem> products = [ProductItem()];
-  
-  // ১৫ নম্বর পয়েন্ট: ক্রমানুসারে সব কাজের অ্যাকশন হিস্ট্রি রাখার জন্য কাস্টম লগ লিস্ট
   List<String> appActionLogs = []; 
   
   TextEditingController searchCt = TextEditingController();
@@ -71,17 +68,11 @@ class _SalesPageState extends State<SalesPage> {
   @override
   void initState() {
     super.initState();
-    List<String> keys = [
-      'rate', 'voriW', 'fixedW', 'totalBill', 'cashPaid', 'bankPaid', 'advancePaid',
-      'oldVori', 'oldAna', 'oldRati', 'oldPoint', 'oldRate',
-      'pakaVori', 'pakaAna', 'pakaRati', 'pakaPoint', 'pakaRate'
-    ];
+    List<String> keys = ['rate', 'voriW', 'fixedW', 'totalBill', 'cashPaid', 'bankPaid', 'advancePaid', 'oldVori', 'oldAna', 'oldRati', 'oldPoint', 'oldRate', 'pakaVori', 'pakaAna', 'pakaRati', 'pakaPoint', 'pakaRate'];
     for (var k in keys) ct[k]?.addListener(_calculate);
     _addProductListeners(products.first);
     _setupOldAndPakaListeners();
     searchCt.addListener(_runSearch);
-    
-    // প্রথম ডিফল্ট লগ এন্ট্রি
     appActionLogs.add('${DateTime.now().toString().substring(11, 16)} - অ্যাপ চালু করা হয়েছে (App Started)');
   }
   void _addProductListeners(ProductItem item) {
@@ -93,7 +84,6 @@ class _SalesPageState extends State<SalesPage> {
       double p = double.tryParse(item.pointCt.text) ?? 0;
       double totalVori = v + (a / 16) + (r / 96) + (p / 960);
       double totalGram = totalVori * 11.664;
-      
       _isListenerBlocked = true;
       if (item.voriCt.text.isEmpty && item.anaCt.text.isEmpty && item.ratiCt.text.isEmpty && item.pointCt.text.isEmpty) {
         item.gramCt.text = '';
@@ -141,6 +131,7 @@ class _SalesPageState extends State<SalesPage> {
     item.pointCt.addListener(listenVori);
     item.gramCt.addListener(listenGram);
   }
+
   void _setupOldAndPakaListeners() {
     void listenOldVori() {
       if (_isListenerBlocked || isOldGramInput) return;
@@ -211,13 +202,13 @@ class _SalesPageState extends State<SalesPage> {
     ct['oldRati']!.addListener(listenOldVori);
     ct['oldPoint']!.addListener(listenOldVori);
     ct['oldGram']!.addListener(listenOldGram);
-
     ct['pakaVori']!.addListener(listenPakaVori);
     ct['pakaAna']!.addListener(listenPakaVori);
     ct['pakaRati']!.addListener(listenPakaVori);
     ct['pakaPoint']!.addListener(listenPakaVori);
     ct['pakaGram']!.addListener(listenPakaGram);
   }
+
   void _convertGramToVoriManual(String gramKey, List<String> voriKeys) {
     _isListenerBlocked = true;
     double gram = double.tryParse(ct[gramKey]!.text) ?? 0;
@@ -239,6 +230,7 @@ class _SalesPageState extends State<SalesPage> {
     _isListenerBlocked = false;
     _calculate();
   }
+
   void _calculate() {
     if (_isListenerBlocked) return;
     _isListenerBlocked = true;
@@ -301,7 +293,6 @@ class _SalesPageState extends State<SalesPage> {
     double due = currentBill - (cash + bank + adv + oldDeduction + pakaDeduction);
     ct['dueAmount']!.text = currentBill > 0 ? due.toStringAsFixed(2) : '';
     ct['paymentStatus']!.text = currentBill > 0 && due <= 0 ? 'পরিশোধিত' : 'বাকি আছে';
-    
     _isListenerBlocked = false;
   }
   void _runSearch() {
@@ -323,19 +314,16 @@ class _SalesPageState extends State<SalesPage> {
 
   void _logAction(String action) {
     String time = DateTime.now().toString().substring(11, 16);
-    setState(() {
-      appActionLogs.insert(0, '$time - $action'); // সর্বশেষ কাজটি একদম উপরে দেখাবে
-    });
+    setState(() { appActionLogs.insert(0, '$time - $action'); });
   }
+
   void _submit() {
     if (ct['phone']!.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEnglish ? 'Enter Phone Number!' : 'মোবাইল নাম্বার লিখুন!'), backgroundColor: Colors.red));
       return;
     }
-
-    String oldTag = isOldRateChecked ? '(পুরাতন সোনা মূল্য সমন্বয়)' : '(পুরাতন সোনা জমা)';
-    String pakaTag = isPakaRateChecked ? '(খাঁটি/পাকা মূল্য সমন্বয়)' : '(খাঁটি/পাকা ওজন কর্তন)';
-
+    String oldTag = isOldRateChecked ? '(পুরাতন মূল্য সমন্বয়)' : '(পুরাতন ওজন জমা)';
+    String pakaTag = isPakaRateChecked ? '(খাঁটি মূল্য সমন্বয়)' : '(খাঁটি ওজন কর্তন)';
     String productDetailsText = '';
     double totalCombinedGram = 0;
     List<Map<String, String>> serializedProducts = [];
@@ -349,20 +337,12 @@ class _SalesPageState extends State<SalesPage> {
       totalCombinedGram += g > 0 ? g : (v + (a / 16) + (r / 96) + (p / 960)) * 11.664;
 
       productDetailsText += '${i + 1}. ${products[i].nameCt.text.isEmpty ? (isEnglish ? "Jewelry" : "গহনা") : products[i].nameCt.text} '
-          '[${products[i].metalType}, ${products[i].carat}] - '
-          '[${products[i].voriCt.text.isEmpty ? "0" : products[i].voriCt.text} vori/ভরি, '
-          '${products[i].anaCt.text.isEmpty ? "0" : products[i].anaCt.text} ana/আনা, '
-          '${products[i].gramCt.text.isEmpty ? "0" : products[i].gramCt.text} g/গ্রাম]\n';
+          '[${products[i].metalType}, ${products[i].carat}] - [${products[i].voriCt.text} ভরি, ${g.toStringAsFixed(3)} গ্রাম]\n';
 
       serializedProducts.add({
-        'name': products[i].nameCt.text,
-        'vori': products[i].voriCt.text,
-        'ana': products[i].anaCt.text,
-        'rati': products[i].ratiCt.text,
-        'point': products[i].pointCt.text,
-        'gram': products[i].gramCt.text,
-        'metalType': products[i].metalType,
-        'carat': products[i].carat,
+        'name': products[i].nameCt.text, 'vori': products[i].voriCt.text, 'ana': products[i].anaCt.text,
+        'rati': products[i].ratiCt.text, 'point': products[i].pointCt.text, 'gram': products[i].gramCt.text,
+        'metalType': products[i].metalType, 'carat': products[i].carat,
       });
     }
 
@@ -370,76 +350,51 @@ class _SalesPageState extends State<SalesPage> {
       'sl': ct['sl']!.text.isEmpty ? (savedSalesList.length + 1).toString() : ct['sl']!.text,
       'date': DateTime.now().toString().substring(0, 16),
       'name': ct['name']!.text, 'address': ct['address']!.text, 'phone': ct['phone']!.text,
-      'productsText': productDetailsText.trim(),
-      'serializedProducts': serializedProducts,
-      'gram': totalCombinedGram.toStringAsFixed(3),
-      'rate': ct['rate']!.text, 'itemPrice': ct['itemTotalPrice']!.text, 'wages': ct['totalW']!.text,
+      'productsText': productDetailsText.trim(), 'serializedProducts': serializedProducts,
+      'gram': totalCombinedGram.toStringAsFixed(3), 'rate': ct['rate']!.text, 'itemPrice': ct['itemTotalPrice']!.text, 'wages': ct['totalW']!.text,
       'totalBill': ct['totalBill']!.text, 'cashPaid': ct['cashPaid']!.text, 'bankPaid': ct['bankPaid']!.text, 'advancePaid': ct['advancePaid']!.text,
       'dueAmount': ct['dueAmount']!.text, 'paymentStatus': ct['paymentStatus']!.text,
       'oldItemName': ct['oldItemName']!.text, 'oldGoldPrice': ct['oldGoldPrice']!.text, 'oldTag': oldTag,
-      'oldWeightText': '${ct['oldVori']!.text} ভরি, ${ct['oldAna']!.text} আনা (${ct['oldGram']!.text} গ্রাম)',
+      'oldWeightText': '${ct['oldVori']!.text} ভরি (${ct['oldGram']!.text} গ্রাম)',
       'pakaGoldPrice': ct['pakaGoldPrice']!.text, 'pakaTag': pakaTag,
-      'pakaWeightText': '${ct['pakaVori']!.text} ভরি, ${ct['pakaAna']!.text} আনা (${ct['pakaGram']!.text} গ্রাম)',
+      'pakaWeightText': '${ct['pakaVori']!.text} ভরি (${ct['pakaGram']!.text} গ্রাম)',
     };
 
     setState(() {
-      if (editingIndex != null) {
-        savedSalesList[editingIndex!] = memoData;
-        _logAction('মেমো আপডেট করা হয়েছে (Updated Memo) #SL: ${memoData['sl']} - ক্রেতা: ${memoData['name']}');
-        editingIndex = null;
-      } else {
-        savedSalesList.add(memoData);
-        _logAction('নতুন মেমো তৈরি করা হয়েছে (Created Memo) #SL: ${memoData['sl']} - ক্রেতা: ${memoData['name']}');
-      }
+      if (editingIndex != null) { savedSalesList[editingIndex!] = memoData; _logAction('মেমো আপডেট #SL: ${memoData['sl']}'); editingIndex = null; }
+      else { savedSalesList.add(memoData); _logAction('নতুন মেমো #SL: ${memoData['sl']}'); }
       filteredSalesList = List.from(savedSalesList);
     });
-
     _showSuccessDialog(memoData['sl']);
   }
+
   void _editMemo(int index) {
     Map<String, dynamic> memo = filteredSalesList[index];
     int originalIndex = savedSalesList.indexOf(memo);
-    
     setState(() {
       editingIndex = originalIndex;
-      ct['sl']!.text = memo['sl'] ?? '';
-      ct['name']!.text = memo['name'] ?? '';
-      ct['address']!.text = memo['address'] ?? '';
-      ct['phone']!.text = memo['phone'] ?? '';
-      ct['rate']!.text = memo['rate'] ?? '';
-      ct['totalBill']!.text = memo['totalBill'] ?? '';
-      ct['cashPaid']!.text = memo['cashPaid'] ?? '';
-      ct['bankPaid']!.text = memo['bankPaid'] ?? '';
-      ct['advancePaid']!.text = memo['advancePaid'] ?? '';
+      ct['sl']!.text = memo['sl'] ?? ''; ct['name']!.text = memo['name'] ?? ''; ct['address']!.text = memo['address'] ?? ''; ct['phone']!.text = memo['phone'] ?? '';
+      ct['rate']!.text = memo['rate'] ?? ''; ct['totalBill']!.text = memo['totalBill'] ?? ''; ct['cashPaid']!.text = memo['cashPaid'] ?? ''; ct['bankPaid']!.text = memo['bankPaid'] ?? ''; ct['advancePaid']!.text = memo['advancePaid'] ?? '';
       ct['oldItemName']!.text = memo['oldItemName'] ?? '';
-      
       if (memo['serializedProducts'] != null) {
         products.clear();
         for (var prodData in memo['serializedProducts']) {
           ProductItem p = ProductItem();
-          p.nameCt.text = prodData['name'] ?? '';
-          p.voriCt.text = prodData['vori'] ?? '';
-          p.anaCt.text = prodData['ana'] ?? '';
-          p.ratiCt.text = prodData['rati'] ?? '';
-          p.pointCt.text = prodData['point'] ?? '';
-          p.gramCt.text = prodData['gram'] ?? '';
-          p.metalType = prodData['metalType'] ?? 'স্বর্ণ';
-          p.carat = prodData['carat'] ?? '২১ ক্যারেট হলমার্ক';
-          products.add(p);
-          _addProductListeners(p);
+          p.nameCt.text = prodData['name'] ?? ''; p.voriCt.text = prodData['vori'] ?? ''; p.anaCt.text = prodData['ana'] ?? '';
+          p.ratiCt.text = prodData['rati'] ?? ''; p.pointCt.text = prodData['point'] ?? ''; p.gramCt.text = prodData['gram'] ?? '';
+          p.metalType = prodData['metalType'] ?? 'স্বর্ণ'; p.carat = prodData['carat'] ?? '২১ ক্যারেট হলমার্ক';
+          products.add(p); _addProductListeners(p);
         }
       }
     });
     Navigator.pop(context);
-    _logAction('এডিট মোডে মেমো লোড হয়েছে (Loaded for Edit) #SL: ${memo['sl']}');
   }
 
   void _clear() {
     _isListenerBlocked = true;
     ct.values.forEach((c) => c.clear());
     products = [ProductItem()];
-    isOldRateChecked = false;
-    isPakaRateChecked = false;
+    isOldRateChecked = false; isPakaRateChecked = false;
     _isListenerBlocked = false;
     setState(() {});
   }
@@ -454,14 +409,13 @@ class _SalesPageState extends State<SalesPage> {
           children: [
             Text(isEnglish ? 'Memo has been created successfully.' : 'মেমো সফলভাবে সংরক্ষিত হয়েছে।'),
             SizedBox(height: 10),
-            // ১৩ নম্বর পয়েন্ট: লোকাল মেমোরি ফাইলের ফোল্ডার লোকেশন গাইড
             Container(
               padding: EdgeInsets.all(8),
               color: Colors.grey.shade100,
               child: Text(
                 isEnglish 
-                  ? '📂 Save Location:\nInternal Storage > JewelryApp_Memos > sl_$sl.xlsx (Offline Excel Spreadsheet)'
-                  : '📂 ফাইল সেভ লোকেশন:\nInternal Storage > JewelryApp_Memos > sl_$sl.xlsx (অফলাইন এক্সেল শীট)',
+                  ? '📂 Save Location:\nInternal Storage > JewelryApp_Memos > sl_$sl.xlsx'
+                  : '📂 ফাইল সেভ লোকেশন:\nInternal Storage > JewelryApp_Memos > sl_$sl.xlsx',
                 style: TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.bold),
               ),
             ),
@@ -479,7 +433,6 @@ class _SalesPageState extends State<SalesPage> {
         title: Text(isEnglish ? 'Jewelry Sales & Accounts' : 'জুয়েলারি বিক্রয় ও হিসাব', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.amber,
         actions: [
-          // ১৪ নম্বর পয়েন্ট: ওয়ান-ক্লিক বাংলা ও ইংরেজি ভাষা পরিবর্তনের বোতাম
           TextButton(
             onPressed: () {
               setState(() {
@@ -526,19 +479,17 @@ class _SalesPageState extends State<SalesPage> {
                                     Text('${isEnglish ? "Name:" : "ক্রেতার নাম:"} ${filteredSalesList[i]['name']}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                     Text('${isEnglish ? "Phone:" : "মোবাইল:"} ${filteredSalesList[i]['phone']} | ${isEnglish ? "Address:" : "ঠিকানা:"} ${filteredSalesList[i]['address']}'),
                                     Divider(),
-                                    Text(isEnglish ? '📦 Sold Items & Breakdown:' : '📦 বিক্রয়কৃত গহনাসমূহের তালিকা ও বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+                                    Text(isEnglish ? '📦 Sold Items Breakdown:' : '📦 বিক্রয়কৃত গহনাসমূহের তালিকা ও বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
                                     Text(filteredSalesList[i]['productsText'] ?? '', style: TextStyle(fontSize: 13, height: 1.4)),
                                     SizedBox(height: 5),
-                                    
-                                    // ১৫ নম্বর রিকোয়ারমেন্ট: কাস্টমারের ১ নজরে বোঝার জন্য পরিপাটি যোগ-বিয়োগ চার্ট বিবরণী
                                     Container(
                                       padding: EdgeInsets.all(10),
                                       color: Colors.grey.shade50,
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(isEnglish ? '📊 Billing Breakdown (1 Glance View):' : '📊 হিসাবের বিবরণী (১ নজরে যোগ-বিয়োগ):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                                          Text('[+] ${isEnglish ? "Gold/Silver Net Price:" : "নিট সোনা/রুপার মূল্য:"} ৳${filteredSalesList[i]['itemPrice']}'),
+                                          Text(isEnglish ? '📊 Billing Breakdown:' : '📊 হিসাবের বিবরণী (১ নজরে যোগ-বিয়োগ):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                                          Text('[+] ${isEnglish ? "Net Metal Price:" : "নিট সোনা/রুপার মূল্য:"} ৳${filteredSalesList[i]['itemPrice']}'),
                                           Text('[+] ${isEnglish ? "Total Wages Added:" : "মোট মজুরি বাবদ যোগ:"} ৳${filteredSalesList[i]['wages']}'),
                                           if (filteredSalesList[i]['oldItemName'].toString().isNotEmpty)
                                             Text('[-] ${isEnglish ? "Old Metal Valuation" : "পুরাতন জমার দর মূল্য"} ${filteredSalesList[i]['oldTag']}: ৳${filteredSalesList[i]['oldGoldPrice']}', style: TextStyle(color: Colors.brown)),
@@ -552,8 +503,7 @@ class _SalesPageState extends State<SalesPage> {
                                     ),
                                     Divider(thickness: 1.5),
                                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                      // ৬ নম্বর পয়েন্ট: হিন্দি ফন্ট ফিক্স করে স্পষ্ট বাংলায় "মোট বাকি/অবশিষ্ট" প্রদর্শন
-                                      Text('${isEnglish ? "Total Due/Remaining:" : "মোট বাকি/অবশিষ্ট:"} ৳${filteredSalesList[i]['dueAmount']}', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text('${isEnglish ? "Total Due:" : "মোট বাকি/অবशिष्ट:"} ৳${filteredSalesList[i]['dueAmount']}', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
                                       Container(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), color: filteredSalesList[i]['paymentStatus'] == 'পরিশোধিত' ? Colors.green : Colors.orange, child: Text(filteredSalesList[i]['paymentStatus'], style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
                                     ]),
                                     Divider(),
@@ -564,21 +514,18 @@ class _SalesPageState extends State<SalesPage> {
                                           onPressed: () { _editMemo(i); },
                                           icon: Icon(Icons.edit, size: 16),
                                           label: Text(isEnglish ? 'Edit' : 'এডিট করুন'),
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
                                         ),
                                         ElevatedButton.icon(
                                           onPressed: () {
-                                            String shareText = 'মেমো নং: ${filteredSalesList[i]['sl']}\nক্রেতা: ${filteredSalesList[i]['name']}\nফোন: ${filteredSalesList[i]['phone']}\nমোট বিল: ৳${filteredSalesList[i]['totalBill']}\nবাকি: ৳${filteredSalesList[i]['dueAmount']}';
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEnglish ? 'Memo copied to Clipboard!' : 'মেমোর বিবরণ ক্লিপবোর্ডে কপি হয়েছে!')));
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEnglish ? 'Memo copied!' : 'মেমোর বিবরণ ক্লিপবোর্ডে কপি হয়েছে!')));
                                           },
                                           icon: Icon(Icons.share, size: 16),
                                           label: Text(isEnglish ? 'Send Memo' : 'মেমো পাঠান'),
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
                                         ),
                                       ],
                                     ),
                                     SizedBox(height: 5),
-                                    Text('📂 Location: Internal Storage > JewelryApp_Memos > sl_${filteredSalesList[i]['sl']}.xlsx', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                    Text('📂 Location: Internal Storage > JewelryApp_Memos', style: TextStyle(fontSize: 10, color: Colors.grey)),
                                   ])),
                                 ),
                               ),
@@ -589,21 +536,18 @@ class _SalesPageState extends State<SalesPage> {
               )));
             },
           ),
-          // ১৫ নম্বর পয়েন্ট: লাইভ অ্যাকশন লগ দেখার কাস্টম আইকন বাটন
           IconButton(
             icon: Icon(Icons.history_toggle_off, color: Colors.white),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (ctx) => Scaffold(
-                appBar: AppBar(title: Text(isEnglish ? 'Live Action Excel Logs' : 'লাইভ অ্যাকশন লগ (সিরিয়াল শীট)'), backgroundColor: Colors.amber),
+                appBar: AppBar(title: Text(isEnglish ? 'Live Action Logs' : 'লাইভ অ্যাকশন লগ (সিরিয়াল শীট)'), backgroundColor: Colors.amber),
                 body: appActionLogs.isEmpty 
                   ? Center(child: Text(isEnglish ? 'No logs recorded.' : 'কোনো লগ রেকর্ড পাওয়া যায়নি।'))
                   : ListView.builder(
                       itemCount: appActionLogs.length,
                       itemBuilder: (context, index) => ListTile(
-                        leading: CircleAvatar(child: Text('${index + 1}'), backgroundColor: Colors.amber.shade100),
-                        title: Text(appActionLogs[index], style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                        dense: true,
-                        dividerColor: Colors.grey.shade200,
+                        leading: CircleAvatar(child: Text('${index + 1}')),
+                        title: Text(appActionLogs[index], style: TextStyle(fontSize: 14)),
                       ),
                     ),
               )));
@@ -628,12 +572,10 @@ class _SalesPageState extends State<SalesPage> {
               TextField(controller: ct['phone'], decoration: InputDecoration(labelText: isEnglish ? 'Mobile Number' : 'মোবাইল নাম্বার'), keyboardType: TextInputType.phone),
             ]))),
             SizedBox(height: 15),
-            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(isEnglish ? '2. Product Description & Weights:' : '২. পণ্যের বিবরণ ও ওজনসমূহ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 16)),
-                // ১ নম্বর পয়েন্ট: একাধিক পণ্য যোগ করার সাথে সাথে লাইভ মোট ওজন দেখার কাস্টম রিয়েল-টাইম ডিসপ্লে
                 Builder(builder: (context) {
                   double totalV = 0;
                   for (var prod in products) {
@@ -682,7 +624,6 @@ class _SalesPageState extends State<SalesPage> {
                           children: [
                             Expanded(flex: 2, child: TextField(controller: products[index].nameCt, decoration: InputDecoration(labelText: isEnglish ? 'Item Name (Chain, Ring)' : 'পণ্যের নাম (যেমন: চেন, আংটি)'))),
                             SizedBox(width: 5),
-                            // ১০ নম্বর পয়েন্ট: পণ্য তালিকায় কাস্টম মেটাল টাইপ সিলেকশন অপশন
                             DropdownButton<String>(
                               value: products[index].metalType,
                               items: ['স্বর্ণ', 'রুপা', 'অন্যান্য'].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
@@ -691,7 +632,6 @@ class _SalesPageState extends State<SalesPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        // ৪ নম্বর পয়েন্ট: ওজন হিসাবের হেডার কালার গাঢ় গোলাপি (Deep Pink)
                         Text(isEnglish ? 'Weight Breakdown (Vori, Ana, Rati, Point):' : 'ওজন হিসাব (ভরি, আনা, রতি, পয়েন্ট):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink, fontSize: 13)),
                         Row(children: [
                           Expanded(child: TextField(controller: products[index].voriCt, decoration: InputDecoration(labelText: isEnglish ? 'Vori' : 'ভরি'), keyboardType: TextInputType.number)),
@@ -730,9 +670,7 @@ class _SalesPageState extends State<SalesPage> {
               onChanged: (n) => setState(() => selectedKhath = n!),
             ),
             if (selectedKhath.contains('অন্যান্য')) TextField(controller: ct['customK'], decoration: InputDecoration(labelText: isEnglish ? 'Khath Name' : 'খাতের নাম')),
-            
             SizedBox(height: 20),
-            // ৪ নম্বর পয়েন্ট: পুরাতন স্বর্ণ/রুপা জমার কাস্টম টিক বক্স প্যানেল ডিজাইন
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -763,15 +701,13 @@ class _SalesPageState extends State<SalesPage> {
                 Expanded(child: TextField(controller: ct['oldVori'], decoration: InputDecoration(labelText: isEnglish ? 'Vori' : 'ভরি'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['oldAna'], decoration: InputDecoration(labelText: isEnglish ? 'Ana' : 'আনা'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['oldRati'], decoration: InputDecoration(labelText: isEnglish ? 'Rati' : 'রতি'), keyboardType: TextInputType.number)),
-                Expanded(child: TextField(controller: ct['oldPoint'], decoration: InputDecoration(labelText: isEnglish ? 'Pt' : 'পয়েন্ট'), keyboardType: TextInputType.number)),
+                Expanded(child: TextField(controller: ct['oldPoint'], decoration: InputDecoration(labelText: 'Pt'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['oldGram'], decoration: InputDecoration(labelText: isEnglish ? 'Gram' : 'গ্রাম'), keyboardType: TextInputType.number)),
               ]),
               TextField(controller: ct['oldRate'], decoration: InputDecoration(labelText: isEnglish ? 'Old Metal Deposit Rate' : 'পুরাতন স্বর্ণ/রুপা জমা দর (প্রতি ভরি ৳)'), keyboardType: TextInputType.number),
               TextField(controller: ct['oldGoldPrice'], readOnly: true, decoration: InputDecoration(labelText: isEnglish ? 'Old Metal Total Price' : 'পুরাতন স্বর্ণ/রুপার মোট মূল্য (৳)')),
             ]))),
-
             SizedBox(height: 15),
-            // ৫ নম্বর পয়েন্ট: খাঁটি/পাকা স্বর্ণ/রুপা জমার কাস্টম টিক বক্স প্যানেল ডিজাইন
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -803,7 +739,7 @@ class _SalesPageState extends State<SalesPage> {
                 Expanded(child: TextField(controller: ct['pakaVori'], decoration: InputDecoration(labelText: isEnglish ? 'Vori' : 'ভরি'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['pakaAna'], decoration: InputDecoration(labelText: isEnglish ? 'Ana' : 'আনা'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['pakaRati'], decoration: InputDecoration(labelText: isEnglish ? 'Rati' : 'রতি'), keyboardType: TextInputType.number)),
-                Expanded(child: TextField(controller: ct['pakaPoint'], decoration: InputDecoration(labelText: isEnglish ? 'Pt' : 'পয়েন্ট'), keyboardType: TextInputType.number)),
+                Expanded(child: TextField(controller: ct['pakaPoint'], decoration: InputDecoration(labelText: 'Pt'), keyboardType: TextInputType.number)),
                 Expanded(child: TextField(controller: ct['pakaGram'], decoration: InputDecoration(labelText: isEnglish ? 'Gram' : 'গ্রাম'), keyboardType: TextInputType.number)),
               ]),
               TextField(controller: ct['pakaRate'], decoration: InputDecoration(labelText: isEnglish ? 'Paka Deposit Rate' : 'খাঁটি/পাকা স্বর্ণ/রুপার দর (প্রতি ভরি ৳)'), keyboardType: TextInputType.number),
@@ -813,7 +749,7 @@ class _SalesPageState extends State<SalesPage> {
             Text(isEnglish ? 'Bill & Payment Accounts:' : 'বিল ও পেমেন্ট হিসাব:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
             Card(child: Padding(padding: EdgeInsets.all(12.0), child: Column(children: [
               TextField(controller: ct['totalBill'], decoration: InputDecoration(labelText: isEnglish ? '3. Total Bill (Amount ৳)' : '৩. মোট বিল (টাকা)'), keyboardType: TextInputType.number),
-              TextField(controller: ct['cashPaid'], decoration: InputDecoration(labelText: isEnglish ? '4. Cash Payment Received' : '४. নগদ টাকা জমা দেওয়ার পরিমাণ'), keyboardType: TextInputType.number),
+              TextField(controller: ct['cashPaid'], decoration: InputDecoration(labelText: isEnglish ? '4. Cash Payment Received' : '৪. নগদ টাকা জমা দেওয়ার পরিমাণ'), keyboardType: TextInputType.number),
               TextField(controller: ct['bankPaid'], decoration: InputDecoration(labelText: isEnglish ? '5. Mobile Bank or Direct Bank Paid' : '৫. মোবাইল ব্যাংক বা সরাসরি ব্যাংকে জমা'), keyboardType: TextInputType.number),
               TextField(controller: ct['advancePaid'], decoration: InputDecoration(labelText: isEnglish ? '7. Advance/Booking Amount' : '৭. অগ্রিম জমা (যদি থাকে)'), keyboardType: TextInputType.number),
               TextField(controller: ct['dueAmount'], readOnly: true, decoration: InputDecoration(labelText: isEnglish ? '8. Remaining Due Balance' : '৮. মোট বাকি/অবशिष्ट')),
