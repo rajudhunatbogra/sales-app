@@ -23,15 +23,6 @@ class ProductItem {
 }
 
 class SalesPage extends StatefulWidget {
-  @override
-  _SalesPageState createState() => _SalesPageState();
-}
-class _SalesPageState extends State<SalesPage> {
-    @override
-  void initState() {
-    super.initState();
-    saveToGoogleSheet(ct);
-  }
 
       final Map<String, TextEditingController> ct = {
     'sl': TextEditingController(), 'name': TextEditingController(),
@@ -77,6 +68,8 @@ class _SalesPageState extends State<SalesPage> {
   @override
   void initState() {
     super.initState();
+           saveToGoogleSheet(ct);
+
     List<String> keys = ['rate', 'voriW', 'fixedW', 'totalBill', 'cashPaid', 'bankPaid', 'advancePaid', 'oldVori', 'oldAna', 'oldRati', 'oldPoint', 'oldRate', 'pakaVori', 'pakaAna', 'pakaRati', 'pakaPoint', 'pakaRate'];
     for (var k in keys) ct[k]?.addListener(_calculate);
     _addProductListeners(products.first);
