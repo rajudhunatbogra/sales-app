@@ -351,7 +351,6 @@ class _SalesPageState extends State<SalesPage> {
     });
   }
 
-  // এখানে এররটি সংশোধন করে ফ্ল্যাটারের সঠিক Future মেথড স্ট্রাকচার দেওয়া হয়েছে
   Future<void> _sendDataToGoogleSheet(Map<String, dynamic> memoData) async {
     setState(() { _isLoading = true; });
     try {
@@ -616,4 +615,141 @@ class _SalesPageState extends State<SalesPage> {
                 if (editingIndex != null)
                   Container(
                     width: double.infinity, color: Colors.red.shade100, padding: EdgeInsets.all(8),
-                    child: Text(isEnglish ? '⚠️ Editing Memo SL #${ct['sl']!.text}!' : '⚠️ আপনি এখন ক্রমিক নং ${ct['sl']!.text} এর মেমোটি এডিট করছেন!', style: TextStyle(color: Colors.red, fontWeight: FontWeight
+                    child: Text(isEnglish ? '⚠️ Editing Memo SL #${ct['sl']!.text}!' : '⚠️ আপনি এখন ক্রমিক নং ${ct['sl']!.text} এর মেমোটি এডিট করছেন!', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  ),
+                Card(elevation: 3, child: Padding(padding: EdgeInsets.all(12.0), child: Column(children: [
+                  TextField(controller: ct['sl'], decoration: InputDecoration(labelText: isEnglish ? '1. Memo Serial Number (Auto)' : '১. ক্রমিক নাম্বার (ফাঁকা রাখলে অটো)')),
+                  TextField(controller: ct['name'], decoration: InputDecoration(labelText: isEnglish ? 'Customer Name' : 'ক্রেতার নাম')),
+                  TextField(controller: ct['address'], decoration: InputDecoration(labelText: isEnglish ? 'Address' : 'ঠিকানা')),
+                  TextField(controller: ct['phone'], decoration: InputDecoration(labelText: isEnglish ? 'Mobile Number' : 'মোবাইল নাম্বার'), keyboardType: TextInputType.phone),
+                ]))),
+                SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(isEnglish ? '2. Product Description:' : '২. পণ্যের বিবরণ ও ওজনসমূহ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 15)),
+                    Builder(builder: (context) {
+                      double totalV = 0;
+                      for (var prod in products) {
+                        double v = double.tryParse(prod.voriCt.text) ?? 0;
+                        double a = double.tryParse(prod.anaCt.text) ?? 0;
+                        double r = double.tryParse(prod.ratiCt.text) ?? 0;
+                        double p = double.tryParse(prod.pointCt.text) ?? 0;
+                        totalV += v + (a / 16) + (r / 96) + (p / 960);
+                      }
+                      return Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), color: Colors.pink,
+                        child: Text(isEnglish ? 'Total: ${totalV.toStringAsFixed(2)} vori' : 'লাইভ মোট ওজন: ${totalV.toStringAsFixed(2)} ভরি', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                      );
+                    }),
+                  ],
+                ),
+                ListView.builder(
+                  shrinkWrap: true, physics: NeverScrollableScrollPhysics(), itemCount: products.length,
+                  itemBuilder: (ctx, index) {
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 5), color: Colors.grey.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${isEnglish ? "Product No:" : "পণ্য নম্বর:"} ${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade900)),
+                            TextField(controller: products[index].nameCt, decoration: InputDecoration(labelText: isEnglish ? 'Item Name' : 'পণ্যের নাম (যেমন: চেন, দুল, আংটি)')),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(child: DropdownButton<String>(value: products[index].metalType, items: ['স্বর্ণ', 'রুপা', 'অন্যান্য'].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(), onChanged: (val) { setState(() { products[index].metalType = val!; }); })),
+                                Expanded(child: DropdownButton<String>(value: products[index].carat, items: caratOptions.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (val) { setState(() { products[index].carat = val!; }); })),
+                                Expanded(child: DropdownButton<String>(value: products[index].khath, items: khathOptions.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(), onChanged: (val) { setState(() { products[index].khath = val!; }); })),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(child: TextField(controller: products[index].rateCt, decoration: InputDecoration(labelText: isEnglish ? 'Rate/ভরি দর' : 'ভরি দর (৳)'), keyboardType: TextInputType.number)),
+                                Expanded(child: TextField(controller: products[index].totalPriceCt, readOnly: true, decoration: InputDecoration(labelText: isEnglish ? 'Price/দাম' : 'মোট দাম (৳)'))),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(isEnglish ? 'Weight (Vori, Ana, Rati, Point, Gram):' : 'ওজন হিসাব (ভরি, আনা, রতি, পয়েন্ট):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink, fontSize: 13)),
+                            Row(children: [
+                              Expanded(child: TextField(controller: products[index].voriCt, decoration: InputDecoration(labelText: isEnglish ? 'V' : 'ভরি'), keyboardType: TextInputType.number)),
+                              Expanded(child: TextField(controller: products[index].anaCt, decoration: InputDecoration(labelText: isEnglish ? 'A' : 'আনা'), keyboardType: TextInputType.number)),
+                              Expanded(child: TextField(controller: products[index].ratiCt, decoration: InputDecoration(labelText: isEnglish ? 'R' : 'রতি'), keyboardType: TextInputType.number)),
+                              Expanded(child: TextField(controller: products[index].pointCt, decoration: InputDecoration(labelText: 'Pt'), keyboardType: TextInputType.number)),
+                              Expanded(child: TextField(controller: products[index].gramCt, decoration: InputDecoration(labelText: isEnglish ? 'Gram' : 'গ্রাম'), keyboardType: TextInputType.number)),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                TextButton.icon(
+                  onPressed: () { setState(() { var p = ProductItem(); products.add(p); _addProductListeners(p); _logAction('তালিকায় নতুন পণ্য যোগ করা হয়েছে'); }); },
+                  icon: Icon(Icons.add_circle, color: Colors.green), label: Text(isEnglish ? 'Add More Item' : 'আরো পণ্য ও ওজন যোগ করুন', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                ),
+                SizedBox(height: 15),
+                TextField(controller: ct['voriW'], decoration: InputDecoration(labelText: isEnglish ? 'Wages (Per Vori ৳)' : 'ভরি প্রতি মজুরি (৳)'), keyboardType: TextInputType.number),
+                TextField(controller: ct['fixedW'], decoration: InputDecoration(labelText: isEnglish ? 'Fixed Wages ৳' : 'ফিক্সড মজুরি (৳)'), keyboardType: TextInputType.number),
+                TextField(controller: ct['totalW'], readOnly: true, decoration: InputDecoration(labelText: isEnglish ? 'Total Wages ৳' : 'মোট মজুরি (৳)')),
+                TextField(controller: ct['itemTotalPrice'], readOnly: true, decoration: InputDecoration(labelText: isEnglish ? 'Net Metal Value ৳' : 'নিট সোনা/রুপার মূল্য (৳)'), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                
+                SizedBox(height: 20),
+                Card(color: Colors.brown.shade50, child: Padding(padding: EdgeInsets.all(12.0), child: Column(children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(isEnglish ? '6. Old Metal Deposit:' : '৬. পুরাতন স্বর্ণ/রুপা জমার বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
+                    Row(children: [Text(isEnglish ? 'Price Adjust?' : 'দাম বাদ?', style: TextStyle(fontSize: 11)), Checkbox(value: isOldRateChecked, onChanged: (v) { setState(() { isOldRateChecked = v!; _calculate(); }); })]),
+                  ]),
+                  TextField(controller: ct['oldItemName'], decoration: InputDecoration(labelText: isEnglish ? 'Item Name' : 'পুরাতন জমার জিনিসের নাম')),
+                  Row(children: [
+                    Expanded(child: TextField(controller: ct['oldVori'], decoration: InputDecoration(labelText: 'ভরি'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['oldAna'], decoration: InputDecoration(labelText: 'আনা'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['oldGram'], decoration: InputDecoration(labelText: 'গ্রাম'), keyboardType: TextInputType.number)),
+                  ]),
+                  Row(children: [
+                    Expanded(child: TextField(controller: ct['oldRate'], decoration: InputDecoration(labelText: 'জমা দর (৳)'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['oldGoldPrice'], readOnly: true, decoration: InputDecoration(labelText: 'মোট মূল্য (৳)'))),
+                  ]),
+                ]))),
+                SizedBox(height: 15),
+                Card(color: Colors.green.shade50, child: Padding(padding: EdgeInsets.all(12.0), child: Column(children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(isEnglish ? 'Khati/Paka Deposit:' : 'খাঁটি/পাকা স্বর্ণ/রুপার বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                    Row(children: [Text(isEnglish ? 'Price Adjust?' : 'দাম বাদ?', style: TextStyle(fontSize: 11)), Checkbox(value: isPakaRateChecked, onChanged: (v) { setState(() { isPakaRateChecked = v!; _calculate(); }); })]),
+                  ]),
+                  Row(children: [
+                    Expanded(child: TextField(controller: ct['pakaVori'], decoration: InputDecoration(labelText: 'ভরি'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['pakaAna'], decoration: InputDecoration(labelText: 'আনা'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['pakaGram'], decoration: InputDecoration(labelText: 'গ্রাম'), keyboardType: TextInputType.number)),
+                  ]),
+                  Row(children: [
+                    Expanded(child: TextField(controller: ct['pakaRate'], decoration: InputDecoration(labelText: 'পাকা দর (৳)'), keyboardType: TextInputType.number)),
+                    Expanded(child: TextField(controller: ct['pakaGoldPrice'], readOnly: true, decoration: InputDecoration(labelText: 'মোট মূল্য (৳)'))),
+                  ]),
+                ]))),
+
+                SizedBox(height: 20),
+                Text(isEnglish ? 'Bill Payments:' : 'বিল ও পেমেন্ট হিসাব:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                Card(child: Padding(padding: EdgeInsets.all(12.0), child: Column(children: [
+                  TextField(controller: ct['totalBill'], decoration: InputDecoration(labelText: isEnglish ? '3. Total Bill' : '৩. মোট বিল (টাকা)'), keyboardType: TextInputType.number),
+                  TextField(controller: ct['cashPaid'], decoration: InputDecoration(labelText: isEnglish ? '4. Cash Paid' : '৪. নগদ টাকা জমা দেওয়ার পরিমাণ'), keyboardType: TextInputType.number),
+                  TextField(controller: ct['bankPaid'], decoration: InputDecoration(labelText: isEnglish ? '5. Bank Paid' : '৫. mobile ব্যাংক বা সরাসরি ব্যাংকে জমা'), keyboardType: TextInputType.number),
+                  TextField(controller: ct['advancePaid'], decoration: InputDecoration(labelText: isEnglish ? '7. Advance Paid' : '৭. অগ্রিম জমা (যদি থাকে)'), keyboardType: TextInputType.number),
+                  TextField(controller: ct['dueAmount'], readOnly: true, decoration: InputDecoration(labelText: isEnglish ? '8. Remaining Due' : '৮. মোট বাকি/অবशिष्ट')),
+                ]))),
+                SizedBox(height: 25),
+                SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: _submit, child: Text(editingIndex != null ? (isEnglish ? 'Update Memo' : 'মেমো আপডেট নিশ্চিত করুন') : (isEnglish ? 'Create Memo' : 'বিক্রয় নিশ্চিত ও মেমো তৈরি করুন'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)), style: ElevatedButton.styleFrom(backgroundColor: Colors.amber)))
+              ],
+            ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black26,
+              child: Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.amber))),
+            )
+        ],
+      ),
+    );
+  }
+}
