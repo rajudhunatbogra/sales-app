@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'জুয়েলারি বিক্রয় ও হিসাব',
@@ -24,7 +27,13 @@ class SalesPage extends StatefulWidget {
   _SalesPageState createState() => _SalesPageState();
 }
 class _SalesPageState extends State<SalesPage> {
-  final Map<String, TextEditingController> ct = {
+    @override
+  void initState() {
+    super.initState();
+    saveToGoogleSheet(ct);
+  }
+
+      final Map<String, TextEditingController> ct = {
     'sl': TextEditingController(), 'name': TextEditingController(),
     'address': TextEditingController(), 'phone': TextEditingController(),
     'rate': TextEditingController(), 'itemTotalPrice': TextEditingController(), 
@@ -769,5 +778,26 @@ class _SalesPageState extends State<SalesPage> {
         ),
       ),
     );
+  }
+}
+
+// গুগল শিটে মেমোর সব তথ্য অটোমেটিক পাঠানোর জন্য তৈরি করা ফাংশন
+Future<void> saveToGoogleSheet(Map<String, TextEditingController> ct) async {
+  try {
+    await http.post(
+      Uri.parse('https://script.google.com/macros/s/AKfycbw12G6OuAgNTW6GAKIWJLBydbXv7K2VAnpuYQvt0iXC98YdiOPmdDq7UbQYEqbsvoar/exec'),
+      body: json.encode({
+        'memoNo': ct['sl']!.text,
+        'name': ct['name']!.text,
+        'mobile': ct['phone']!.text,
+        'items': 'Address: ${ct['address']!.text}, Weight: ${ct['totalW']!.text}',
+        'total': ct['totalBill']!.text,
+        'discount': '0',
+        'advanced': ct['advancePaid']!.text,
+        'due': ct['dueAmount']!.text,
+      }),
+    );
+  } catch (e) {
+    print("Error: $e");
   }
 }
