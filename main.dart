@@ -23,6 +23,8 @@ class SalesPage extends StatefulWidget {
   @override
   _SalesPageState createState() => _SalesPageState();
 }
+final String scriptUrl = "https://script.google.com/macros/s/AKfycbw12G6OuAgNTW6GAKIWJLBydbXv7K2VAnpuYQvt0iXC98YdiOPmdDq7UbQYEqbsvoar/exec";
+
 class _SalesPageState extends State<SalesPage> {
   final Map<String, TextEditingController> ct = {
     'sl': TextEditingController(), 'name': TextEditingController(),
