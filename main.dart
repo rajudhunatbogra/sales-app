@@ -28,6 +28,23 @@ class SalesPage extends StatefulWidget {
 final String scriptUrl = "https://script.google.com/macros/s/AKfycbw12G6OuAgNTW6GAKIWJLBydbXv7K2VAnpuYQvt0iXC98YdiOPmdDq7UbQYEqbsvoar/exec";
 
 class _SalesPageState extends State<SalesPage> {
+        void _saveMemo() async {
+    Map<String, dynamic> row = {
+      'name': ct['name']!.text,
+      'address': ct['address']!.text,
+      'totalBill': ct['totalBill']!.text,
+      'date': DateTime.now().toString(),
+    };
+    await DatabaseHelper.instance.insertMemo(row);
+    // সেভ হওয়ার পর কনফার্মেশন মেসেজ বা কিছু চাইলে এখানে দিতে পারেন
+    print("ডেটা সেভ হয়েছে!");
+  }
+        // ডেটাবেজ থেকে ডাটা লোড করার জন্য
+  Future<List<Map<String, dynamic>>> _loadHistory() async {
+    return await DatabaseHelper.instance.queryAllMemos();
+  }
+
+
   final Map<String, TextEditingController> ct = {
     'sl': TextEditingController(), 'name': TextEditingController(),
     'address': TextEditingController(), 'phone': TextEditingController(),
@@ -455,23 +472,47 @@ class _SalesPageState extends State<SalesPage> {
                   appBar: AppBar(title: Text(isEnglish ? 'Memo Records' : 'বিক্রয় ও পরিপাটি মেমো তালিকা'), backgroundColor: Colors.amber),
                   body: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: TextField(
-                          controller: searchCt,
-                          onChanged: (v) { setModalState(() { _runSearch(); }); },
-                          decoration: InputDecoration(
-                            labelText: isEnglish ? 'Search by SL, Name, Mobile or Date' : 'ক্রমিক নং, তারিখ, নাম বা মোবাইল দিয়ে খুঁজুন',
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
+                                        Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: TextField(
+                      controller: searchCt,
+                      onChanged: (v) {
+                        // আপনার আগের সার্চ লজিক এখানে দেবেন
+                      },
+                      decoration: InputDecoration(
+                        labelText: isEnglish ? 'Search' : 'খুঁজুন',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      Expanded(
-                        child: filteredSalesList.isEmpty 
-                            ? Center(child: Text(isEnglish ? 'No Memos Found!' : 'কোনো মেমো খুঁজে পাওয়া যায়নি!')) 
-                            : ListView.builder(
-                                itemCount: filteredSalesList.length,
+                    ),
+                  ),
+                                    Expanded(
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _loadHistory(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(isEnglish ? 'No Memos Found!' : 'কোনো মেমো খুঁজে পাওয়া যায়নি!'),
+                          );
+                        }
+                        return ListView.builder(
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            final memo = snapshot.data![index];
+                            return ListTile(
+                              title: Text(memo['name'] ?? "নাম নেই"),
+                              subtitle: Text("বিল: ${memo['totalBill'] ?? '0'}"),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+
                                 itemBuilder: (c, i) => Card(
                                   margin: EdgeInsets.all(10), elevation: 6,
                                   child: Padding(padding: EdgeInsets.all(14.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -782,7 +823,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('sales_memo.db');
+    _database = await _initDB('memos.db');
     return _database!;
   }
 
@@ -805,5 +846,10 @@ class DatabaseHelper {
   Future<int> insertMemo(Map<String, dynamic> row) async {
     final db = await instance.database;
     return await db.insert('memos', row);
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllMemos() async {
+    final db = await instance.database;
+    return await db.query('memos', orderBy: 'id DESC');
   }
 }
