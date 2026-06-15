@@ -11,10 +11,11 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   
+  # ডেটাবেজ ও নেটওয়ার্কিং এর জন্য প্রয়োজনীয় প্যাকেজ
   http: ^1.2.1
   shared_preferences: ^2.3.0
-
-
+  sqflite: ^2.3.0
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
