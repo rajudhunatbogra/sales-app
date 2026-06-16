@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/jewelry_item.dart';
-import '../models/memo_model.dart';
-import '../database/database_helper.dart';
-import '../services/storage_service.dart';
-import '../services/calculator_service.dart';
+import 'package:sales_app/models/jewelry_item.dart';
+import 'package:sales_app/models/memo_model.dart';
+import 'package:sales_app/database/database_helper.dart';
+import 'package:sales_app/services/storage_service.dart';
+import 'package:sales_app/services/calculator_service.dart';
 
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});
@@ -173,7 +173,7 @@ class _SalesPageState extends State<SalesPage> {
               TextFormField(controller: _discountController, decoration: const InputDecoration(labelText: 'ছাড় (টাকা)'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
               Text('মোট প্রদেয়: $_grandTotal টাকা', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 18)),
               TextFormField(controller: _paidController, decoration: const InputDecoration(labelText: 'জমা টাকা'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
-              Text('অবশিষ্ট বাকি: $_dueAmount টাকা', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('অবशिष्ट বাকি: $_dueAmount টাকা', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 20),
               ElevatedButton(onPressed: _saveInvoice, child: const Text('মেমো সেভ করুন')),
             ],
