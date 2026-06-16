@@ -88,7 +88,7 @@ class _SalesPageState extends State<SalesPage> {
     );
 
     await DatabaseHelper.instance.insertMemo(newMemo);
-    int currentNo = int.parse(_memoNoController.text.split('-'));
+    int currentNo = int.parse(_memoNoController.text.split('-')[1]);
     await StorageService.incrementMemoNumber(currentNo);
 
     if (mounted) {
@@ -124,7 +124,10 @@ class _SalesPageState extends State<SalesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('জুয়েলারি প্রফেশনাল পিওএস'), backgroundColor: Colors.amber),
+      appBar: AppBar(
+        title: const Text('জুয়েলারি প্রফেশনাল পিওএস'), 
+        backgroundColor: Colors.amber,
+      ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -134,6 +137,7 @@ class _SalesPageState extends State<SalesPage> {
               TextFormField(controller: _memoNoController, decoration: const InputDecoration(labelText: 'মেমো নাম্বার'), readOnly: true),
               TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'গ্রাহকের নাম'), validator: (v) => v!.isEmpty ? 'নাম দিন' : null),
               TextFormField(controller: _phoneController, decoration: const InputDecoration(labelText: 'মোবাইল'), keyboardType: TextInputType.phone),
+              TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'ঠিকানা')),
               const SizedBox(height: 15),
               ListView.builder(
                 shrinkWrap: true,
@@ -160,14 +164,37 @@ class _SalesPageState extends State<SalesPage> {
                             Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'মজুরি'), keyboardType: TextInputType.number, onChanged: (v) { _items[idx].makingCharge = double.tryParse(v) ?? 0; _updateRow(idx); })),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text('মোট ভরি: ${_items[idx].totalVori} | মোট মূল্য: ${_items[idx].totalPrice} টাকা', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('মোট ভরি: ${_items[idx].totalVori}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text('মোট মূল্য: ${_items[idx].totalPrice} টাকা', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                if (_items.length > 1) {
+                                  setState(() {
+                                    _items.removeAt(idx);
+                                    _calculateFinalTotals();
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-              ElevatedButton(onPressed: () { setState(() { _items.add(JewelryItem(name: "নতুন গহনা")); }); }, child: const Text('আইটেম যোগ করুন')),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () { 
+                  setState(() { _items.add(JewelryItem(name: "নতুন গহনা")); }); 
+                }, 
+                icon: const Icon(Icons.add),
+                label: const Text('আইটেম যোগ করুন'),
+              ),
               const SizedBox(height: 15),
               Text('সাবটোটাল: $_subTotal টাকা', style: const TextStyle(fontSize: 16)),
               TextFormField(controller: _discountController, decoration: const InputDecoration(labelText: 'ছাড় (টাকা)'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
@@ -175,7 +202,14 @@ class _SalesPageState extends State<SalesPage> {
               TextFormField(controller: _paidController, decoration: const InputDecoration(labelText: 'জমা টাকা'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
               Text('অবशिष्ट বাকি: $_dueAmount টাকা', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveInvoice, child: const Text('মেমো সেভ করুন')),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, padding: const EdgeInsets.all(12)),
+                  onPressed: _saveInvoice, 
+                  child: const Text('মেমো সেভ করুন', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
             ],
           ),
         ),
