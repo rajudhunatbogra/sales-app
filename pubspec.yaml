@@ -1,5 +1,5 @@
 name: sales_app
-description: "A new jewelry sales and calculation app."
+description: "A professional jewelry sales and calculation POS app."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   
-  # ডেটাবেজ ও নেটওয়ার্কিং এর জন্য প্রয়োজনীয় প্যাকেজ
+  # ডেটাবেজ, লোকাল স্টোরেজ ও নেটওয়ার্কিং
   http: ^1.2.1
   shared_preferences: ^2.3.0
   sqflite: ^2.3.0
