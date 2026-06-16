@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/sales_page.dart';
+import 'package:sales_app/screens/sales_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
