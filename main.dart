@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'lib/screens/sales_page.dart'; // পাথটি ফিক্স করা হলো
+import 'screens/sales_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
