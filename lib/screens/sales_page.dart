@@ -78,7 +78,7 @@ class _SalesPageState extends State<SalesPage> {
       customerName: _nameController.text,
       customerPhone: _phoneController.text,
       customerAddress: _addressController.text,
-      date: DateTime.now().toString().split(' ')[0],
+      date: DateTime.now().toString().split(' '),
       items: _items,
       subTotal: _subTotal,
       discount: double.tryParse(_discountController.text) ?? 0.0,
@@ -88,7 +88,7 @@ class _SalesPageState extends State<SalesPage> {
     );
 
     await DatabaseHelper.instance.insertMemo(newMemo);
-    int currentNo = int.parse(_memoNoController.text.split('-')[1]);
+    int currentNo = int.parse(_memoNoController.text.split('-'));
     await StorageService.incrementMemoNumber(currentNo);
 
     if (mounted) {
@@ -173,7 +173,7 @@ class _SalesPageState extends State<SalesPage> {
               TextFormField(controller: _discountController, decoration: const InputDecoration(labelText: 'ছাড় (টাকা)'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
               Text('মোট প্রদেয়: $_grandTotal টাকা', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 18)),
               TextFormField(controller: _paidController, decoration: const InputDecoration(labelText: 'জমা টাকা'), keyboardType: TextInputType.number, onChanged: (v) => _calculateFinalTotals()),
-              Text('অবशिष्ट বাকি: $_dueAmount টাকা', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('অবশিষ্ট বাকি: $_dueAmount টাকা', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 20),
               ElevatedButton(onPressed: _saveInvoice, child: const Text('মেমো সেভ করুন')),
             ],
