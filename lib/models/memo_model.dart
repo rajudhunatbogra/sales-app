@@ -1,47 +1,47 @@
-class MemoModel {
-  String sl;
-  String customerName;
-  String phone;
-  String address;
-  String date;
-  double totalBill;
-  double dueAmount;
-  String paymentStatus;
+import 'jewelry_item.dart';
 
-  MemoModel({
-    required this.sl,
+class Memo {
+  int? id;
+  String memoNo;
+  String customerName;
+  String customerPhone;
+  String customerAddress;
+  String date;
+  List<JewelryItem> items;
+  double subTotal;
+  double discount;
+  double grandTotal;
+  double paidAmount;
+  double dueAmount;
+
+  Memo({
+    this.id,
+    required this.memoNo,
     required this.customerName,
-    required this.phone,
-    required this.address,
+    required this.customerPhone,
+    required this.customerAddress,
     required this.date,
-    required this.totalBill,
+    required this.items,
+    required this.subTotal,
+    required this.discount,
+    required this.grandTotal,
+    required this.paidAmount,
     required this.dueAmount,
-    required this.paymentStatus,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'sl': sl,
+      'id': id,
+      'memoNo': memoNo,
       'customerName': customerName,
-      'phone': phone,
-      'address': address,
+      'customerPhone': customerPhone,
+      'customerAddress': customerAddress,
       'date': date,
-      'totalBill': totalBill,
+      'subTotal': subTotal,
+      'discount': discount,
+      'grandTotal': grandTotal,
+      'paidAmount': paidAmount,
       'dueAmount': dueAmount,
-      'paymentStatus': paymentStatus,
     };
-  }
-
-  factory MemoModel.fromMap(Map<String, dynamic> map) {
-    return MemoModel(
-      sl: map['sl'] ?? '',
-      customerName: map['customerName'] ?? '',
-      phone: map['phone'] ?? '',
-      address: map['address'] ?? '',
-      date: map['date'] ?? '',
-      totalBill: (map['totalBill'] ?? 0).toDouble(),
-      dueAmount: (map['dueAmount'] ?? 0).toDouble(),
-      paymentStatus: map['paymentStatus'] ?? '',
-    );
   }
 }
