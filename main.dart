@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sales_app/screens/dashboard_page.dart'; // নতুন ড্যাশবোর্ড পেজ ইমপোর্ট করা হলো
+import 'screens/dashboard_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,10 +15,10 @@ class JewelryPosApp extends StatelessWidget {
       title: 'Jewelry POS Pro',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.amber,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         useMaterial3: true,
       ),
-      home: const DashboardPage(), // অ্যাপ চালু হলে এখন প্রথমে ড্যাশবোর্ড পেজ আসবে
+      home: const DashboardPage(),
     );
   }
 }
