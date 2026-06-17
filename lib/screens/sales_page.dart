@@ -13,7 +13,6 @@ class SalesPage extends StatefulWidget {
 class _SalesPageState extends State<SalesPage> {
   final _formKey = GlobalKey<FormState>();
   
-  // কাস্টমার ইনফো কন্ট্রোলার
   final _customerNameController = TextEditingController();
   final _customerPhoneController = TextEditingController();
   final _customerAddressController = TextEditingController();
@@ -21,7 +20,6 @@ class _SalesPageState extends State<SalesPage> {
   final _discountController = TextEditingController(text: '0');
   final _paidAmountController = TextEditingController(text: '0');
 
-  // নতুন গহনা যুক্ত করার কন্ট্রোলার
   final _itemNameController = TextEditingController();
   final _voriController = TextEditingController(text: '0');
   final _anaController = TextEditingController(text: '0');
@@ -31,7 +29,6 @@ class _SalesPageState extends State<SalesPage> {
   final _rateController = TextEditingController(text: '0');
   final _makingChargeController = TextEditingController(text: '0');
 
-  // পুরাতন/পাকা গহনা (Exchange) যুক্ত করার কন্ট্রোলার
   final _exNameController = TextEditingController();
   final _exVoriController = TextEditingController(text: '0');
   final _exAnaController = TextEditingController(text: '0');
@@ -43,17 +40,17 @@ class _SalesPageState extends State<SalesPage> {
   String _selectedItemType = 'সোনা';
   String _selectedKarat = '২২ ক্যারেট হলমার্ক';
   String _exItemType = 'সোনা';
-  String _exType = 'পাকা/খাঁটি'; // 'পাকা/খাঁটি' নাকি 'দাম অনুযায়ী'
+  String _exType = 'পাকা/খাঁটি';
 
-  List<JewelryItem> _boughtItems = []; // নতুন কেনা গহনার তালিকা
-  List<JewelryItem> _exchangedItems = []; // জমা দেওয়া পুরাতন/পাকা গহনার তালিকা
+  List<JewelryItem> _boughtItems = [];
+  List<JewelryItem> _exchangedItems = [];
 
   double _subTotal = 0.0;
   double _grandTotal = 0.0;
   double _dueAmount = 0.0;
   double _totalBoughtVori = 0.0;
-  double _totalPureExchangedVori = 0.0; // খাঁটি পাকা সোনার মোট ওজন যা বিয়োগ হবে
-  double _totalExchangedCash = 0.0; // দাম অনুযায়ী জমা হওয়া মোট টাকা
+  double _totalPureExchangedVori = 0.0;
+  double _totalExchangedCash = 0.0;
 
   final List<String> _karatList = [
     '১৮ ক্যারেট বাংলা', '১৮ ক্যারেট কেডিয়াম', '১৮ ক্যারেট হলমার্ক',
@@ -66,6 +63,15 @@ class _SalesPageState extends State<SalesPage> {
   void initState() {
     super.initState();
     _memoNoController.text = 'MEMO-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    _updateAutoRate(_selectedKarat); // শুরুতে ডিফল্ট রেট লোড হবে
+  }
+
+  // ডাটাবেজ থেকে রেট এনে অটোমেটিক বক্সে বসানোর মূল লিঙ্কিং মেথড
+  Future<void> _updateAutoRate(String karat) async {
+    double savedRate = await DatabaseHelper.instance.getRateByKarat(karat);
+    setState(() {
+      _rateController.text = savedRate.toStringAsFixed(0);
+    });
   }
   void _calculateInvoice() {
     double boughtVoriSum = 0.0;
@@ -73,41 +79,31 @@ class _SalesPageState extends State<SalesPage> {
     double pureExVoriSum = 0.0;
     double exCashSum = 0.0;
 
-    // ১. নতুন কেনা গহনার মোট ওজন ও মূল্য হিসাব
     for (var item in _boughtItems) {
       boughtVoriSum += item.totalVori;
       boughtPriceSum += item.totalPrice;
     }
 
-    // ২. পুরাতন বা পাকা গহনার হিসাব (পাকা বনাম দাম অনুযায়ী)
     for (var item in _exchangedItems) {
       if (item.exchangeType == 'পাকা/খাঁটি') {
-        pureExVoriSum += item.totalVori; // সরাসরি ওজনের সাথে বিয়োগের জন্য জমা
+        pureExVoriSum += item.totalVori;
       } else {
-        exCashSum += item.exchangeAmount; // বিলের টাকা থেকে মাইনাস করার জন্য জমা
+        exCashSum += item.exchangeAmount;
       }
     }
 
-    // ৩. পাকা বা খাঁটি সোনা/রূপা বিয়োগ করার মূল ম্যাজিক লজিক
-    // মোট তৈরি করা ওজন থেকে পাকা ওজন বিয়োগ করে বাকি ওজন বের করা
     double remainingVori = boughtVoriSum - pureExVoriSum;
     if (remainingVori < 0) remainingVori = 0;
 
-    // ৪. ফাইনাল বিল ক্যালকুলেশন
     double discount = double.tryParse(_discountController.text) ?? 0;
     double paid = double.tryParse(_paidAmountController.text) ?? 0;
 
-    // যদি পাকা সোনা বিয়োগ হয়ে থাকে, তবে বিলের দামও সেই অনুযায়ী কমে যাবে
     double adjustedSubTotal = boughtPriceSum;
-    
-    // যদি পাকা ওজন বিয়োগের পর কিছু বাকি থাকে এবং নতুন আইটেম থাকে
     if (pureExVoriSum > 0 && boughtVoriSum > 0) {
-      // ওজনের অনুপাত অনুযায়ী সাবটোটাল অ্যাডজাস্ট করা হলো
       double ratio = remainingVori / boughtVoriSum;
       adjustedSubTotal = boughtPriceSum * ratio;
     }
 
-    // গ্র্যান্ড টোটাল = অ্যাডজাস্টেড বিল - দাম অনুযায়ী জমা হওয়া টাকা - ডিসকাউন্ট
     double grandTotal = adjustedSubTotal - exCashSum - discount;
     if (grandTotal < 0) grandTotal = 0;
 
@@ -123,7 +119,6 @@ class _SalesPageState extends State<SalesPage> {
     });
   }
 
-  // নতুন গহনা লিস্টে যোগ করার মেথড
   void _addBoughtItem() {
     double vori = double.tryParse(_voriController.text) ?? 0;
     double ana = double.tryParse(_anaController.text) ?? 0;
@@ -158,7 +153,6 @@ class _SalesPageState extends State<SalesPage> {
     }
   }
 
-  // পুরাতন/পাকা গহনা লিস্টে যোগ করার মেথড (নাম ও আলাদা ওজন সহ)
   void _addExchangeItem() {
     double vori = double.tryParse(_exVoriController.text) ?? 0;
     double ana = double.tryParse(_exAnaController.text) ?? 0;
@@ -168,7 +162,7 @@ class _SalesPageState extends State<SalesPage> {
     double rate = double.tryParse(_exRateController.text) ?? 0;
 
     double totalVori = vori + (ana / 16.0) + (rati / 96.0) + (point / 960.0) + (gram / 11.664);
-    double amount = totalVori * rate; // 'দাম অনুযায়ী' অপশনের জন্য মূল্য
+    double amount = totalVori * rate;
 
     if (_exNameController.text.isNotEmpty && totalVori > 0) {
       setState(() {
@@ -190,6 +184,7 @@ class _SalesPageState extends State<SalesPage> {
       _calculateInvoice();
     }
   }
+
   Future<void> _saveInvoice() async {
     if (_formKey.currentState!.validate() && _boughtItems.isNotEmpty) {
       final newMemo = Memo(
@@ -224,13 +219,8 @@ class _SalesPageState extends State<SalesPage> {
         _memoNoController.text = 'MEMO-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
       });
       _calculateInvoice();
-    } else if (_boughtItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('অনুগ্রহ করে অন্তত ১টি গহনা বিলের তালিকায় যুক্ত করুন')),
-      );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,7 +235,6 @@ class _SalesPageState extends State<SalesPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // কাস্টমার ইনফরমেশন কার্ড
               Card(
                 color: Colors.white,
                 elevation: 3,
@@ -254,18 +243,18 @@ class _SalesPageState extends State<SalesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('কাস্টমার ও মেমো বিবরণী:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Text('কাস্টমার বিবরণী:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       const Divider(),
                       Row(
                         children: [
-                          Expanded(child: TextFormField(controller: _memoNoController, decoration: const InputDecoration(labelText: 'মেমো নং (স্বয়ংক্রিয়)'))),
+                          Expanded(child: TextFormField(controller: _memoNoController, decoration: const InputDecoration(labelText: 'মেমো নং'))),
                           const SizedBox(width: 10),
-                          Expanded(child: TextFormField(controller: _customerNameController, decoration: const InputDecoration(labelText: 'কাস্টমারের নাম'), validator: (v) => v!.isEmpty ? 'নাম দিন' : null)),
+                          Expanded(child: TextFormField(controller: _customerNameController, decoration: const InputDecoration(labelText: 'নাম'), validator: (v) => v!.isEmpty ? 'নাম দিন' : null)),
                         ],
                       ),
                       Row(
                         children: [
-                          Expanded(child: TextFormField(controller: _customerPhoneController, decoration: const InputDecoration(labelText: 'মোবাইল নম্বর'), keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'মোবাইল দিন' : null)),
+                          Expanded(child: TextFormField(controller: _customerPhoneController, decoration: const InputDecoration(labelText: 'মোবাইল'), keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'মোবাইল দিন' : null)),
                           const SizedBox(width: 10),
                           Expanded(child: TextFormField(controller: _customerAddressController, decoration: const InputDecoration(labelText: 'ঠিকানা'), validator: (v) => v!.isEmpty ? 'ঠিকানা দিন' : null)),
                         ],
@@ -275,8 +264,6 @@ class _SalesPageState extends State<SalesPage> {
                 ),
               ),
               const SizedBox(height: 15),
-
-              // নতুন গহনা এন্ট্রি কার্ড
               Card(
                 elevation: 3,
                 child: Padding(
@@ -284,7 +271,7 @@ class _SalesPageState extends State<SalesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('১. নতুন বিক্রিত গহনা যুক্ত করুন:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+                      const Text('১. নতুন বিক্রিত গহনা:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
                       const Divider(),
                       Row(
                         children: [
@@ -300,14 +287,17 @@ class _SalesPageState extends State<SalesPage> {
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: _selectedKarat,
-                              decoration: const InputDecoration(labelText: 'ক্যারেটের ধরন'),
+                              decoration: const InputDecoration(labelText: 'ক্যারেট'),
                               items: _karatList.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(),
-                              onChanged: (val) => setState(() => _selectedKarat = val!),
+                              onChanged: (val) {
+                                setState(() => _selectedKarat = val!);
+                                _updateAutoRate(val!);
+                              },
                             ),
                           ),
                         ],
                       ),
-                      TextFormField(controller: _itemNameController, decoration: const InputDecoration(labelText: 'গহনার বিবরণ/ডিজাইনের নাম')),
+                      TextFormField(controller: _itemNameController, decoration: const InputDecoration(labelText: 'গহনার নাম/বিবরণ')),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -317,16 +307,16 @@ class _SalesPageState extends State<SalesPage> {
                           const SizedBox(width: 5),
                           Expanded(child: TextFormField(controller: _ratiController, decoration: const InputDecoration(labelText: 'রতি'), keyboardType: TextInputType.number)),
                           const SizedBox(width: 5),
-                          Expanded(child: TextFormField(controller: _pointController, decoration: const InputDecoration(labelText: 'পয়েন্ট'), keyboardType: TextInputType.number)),
+                          Expanded(child: TextFormField(controller: _pointController, decoration: const InputDecoration(labelText: 'পয়েন্ট'), keyboardType: TextInputType.number)),
                           const SizedBox(width: 5),
                           Expanded(child: TextFormField(controller: _gramController, decoration: const InputDecoration(labelText: 'গ্রাম'), keyboardType: TextInputType.number)),
                         ],
                       ),
                       Row(
                         children: [
-                          Expanded(child: TextFormField(controller: _rateController, decoration: const InputDecoration(labelText: 'প্রতি ভরি দর (টাকা হাতে লিখুন)'), keyboardType: TextInputType.number)),
+                          Expanded(child: TextFormField(controller: _rateController, decoration: const InputDecoration(labelText: 'দর (অটো/হাতে লিখুন)'), keyboardType: TextInputType.number)),
                           const SizedBox(width: 10),
-                          Expanded(child: TextFormField(controller: _makingChargeController, decoration: const InputDecoration(labelText: 'মজুরি/মেকিং চার্জ (টাকা)'), keyboardType: TextInputType.number)),
+                          Expanded(child: TextFormField(controller: _makingChargeController, decoration: const InputDecoration(labelText: 'মজুরি'), keyboardType: TextInputType.number)),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -341,7 +331,6 @@ class _SalesPageState extends State<SalesPage> {
                 ),
               ),
               const SizedBox(height: 15),
-              // পুরাতন/পাকা গহনা (Exchange) এন্ট্রি কার্ড
               Card(
                 elevation: 3,
                 child: Padding(
@@ -349,7 +338,7 @@ class _SalesPageState extends State<SalesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('২. পুরাতন গহনা বা পাকা মেটাল জমা (Exchange):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.deepOrange)),
+                      const Text('২. পুরাতন গহনা/পাকা মেটাল জমা:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.deepOrange)),
                       const Divider(),
                       Row(
                         children: [
@@ -365,14 +354,14 @@ class _SalesPageState extends State<SalesPage> {
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: _exType,
-                              decoration: const InputDecoration(labelText: 'জমার ধরন (পাকা বনাম দাম)'),
+                              decoration: const InputDecoration(labelText: 'জমার ধরন'),
                               items: ['পাকা/খাঁটি', 'দাম অনুযায়ী'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                               onChanged: (val) => setState(() => _exType = val!),
                             ),
                           ),
                         ],
                       ),
-                      TextFormField(controller: _exNameController, decoration: const InputDecoration(labelText: 'পুরাতন গহনার নাম/পাকা বারের বিবরণ')),
+                      TextFormField(controller: _exNameController, decoration: const InputDecoration(labelText: 'পুরাতন বিবরণ')),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -382,17 +371,12 @@ class _SalesPageState extends State<SalesPage> {
                           const SizedBox(width: 5),
                           Expanded(child: TextFormField(controller: _exRatiController, decoration: const InputDecoration(labelText: 'রতি'), keyboardType: TextInputType.number)),
                           const SizedBox(width: 5),
-                          Expanded(child: TextFormField(controller: _exPointController, decoration: const InputDecoration(labelText: 'পয়েন্ট'), keyboardType: TextInputType.number)),
+                          Expanded(child: TextFormField(controller: _exPointController, decoration: const InputDecoration(labelText: 'পয়েন্ট'), keyboardType: TextInputType.number)),
                           const SizedBox(width: 5),
                           Expanded(child: TextFormField(controller: _exGramController, decoration: const InputDecoration(labelText: 'গ্রাম'), keyboardType: TextInputType.number)),
                         ],
                       ),
-                      // 'দাম অনুযায়ী' সিলেক্ট করলেই কেবল দরের ফিল্ডটি সক্রিয় বা অর্থপূর্ণ হবে
-                      TextFormField(
-                        controller: _exRateController, 
-                        decoration: const InputDecoration(labelText: 'জমা মেটালের দর (দাম অনুযায়ী সিলেক্ট করলে লিখুন)'), 
-                        keyboardType: TextInputType.number
-                      ),
+                      TextFormField(controller: _exRateController, decoration: const InputDecoration(labelText: 'দর (দাম অনুযায়ী হলে)'), keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
                       ElevatedButton.icon(
                         onPressed: _addExchangeItem,
@@ -406,7 +390,6 @@ class _SalesPageState extends State<SalesPage> {
               ),
               const SizedBox(height: 20),
 
-              // বিক্রিত ও জমা হওয়া মালের লাইভ টেবিল ভিউ
               if (_boughtItems.isNotEmpty) ...[
                 const Text('বিক্রিত পণ্যের তালিকা:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
                 ..._boughtItems.map((item) => ListTile(
@@ -417,21 +400,15 @@ class _SalesPageState extends State<SalesPage> {
               ],
               const Divider(),
               if (_exchangedItems.isNotEmpty) ...[
-                const Text('জমা হওয়া পুরাতন/পাকা মালের তালিকা:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange)),
+                const Text('জমা হওয়া মালের তালিকা:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange)),
                 ..._exchangedItems.map((item) => ListTile(
                   title: Text('${item.name} (${item.exchangeType})'),
-                  subtitle: Text('${item.totalVori.toStringAsFixed(3)} ভরি ${item.exchangeRate > 0 ? "@ ${item.exchangeRate.toStringAsFixed(0)} ৳" : "(ওজন মাইনাস)"}'),
+                  subtitle: Text('${item.totalVori.toStringAsFixed(3)} ভরি ${item.exchangeRate > 0 ? "@ ${item.exchangeRate.toStringAsFixed(0)} ৳" : "(ওজন বিয়োগ)"}'),
                   trailing: Text(item.exchangeType == 'দাম অনুযায়ী' ? '-${item.exchangeAmount.toStringAsFixed(0)} ৳' : 'ওজন জমা', style: const TextStyle(color: Colors.red)),
                 )).toList(),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  color: Colors.deepOrange.shade50,
-                  child: Text('পুরাতন মালের সর্বমোট ওজন: ${_exchangedItems.fold<double>(0, (sum, i) => sum + i.totalVori).toStringAsFixed(3)} ভরি', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ),
               ],
               const SizedBox(height: 25),
 
-              // ফাইনাল মেমো সামারি ও ক্যাশ কাউন্টার
               Card(
                 color: Colors.amber.shade50,
                 elevation: 4,
@@ -442,10 +419,10 @@ class _SalesPageState extends State<SalesPage> {
                       _buildSummaryRow('মোট অর্ডারের মূল্য:', '${_subTotal.toStringAsFixed(2)} ৳'),
                       _buildSummaryRow('পাকা সোনা জমা (ওজন বিয়োগ):', '${_totalPureExchangedVori.toStringAsFixed(3)} ভরি'),
                       _buildSummaryRow('পুরাতন মাল বাবদ জমা টাকা:', '${_totalExchangedCash.toStringAsFixed(2)} ৳'),
-                      TextFormField(controller: _discountController, decoration: const InputDecoration(labelText: 'বিশেষ ছাড়/ডিসকাউন্ট (টাকা)'), keyboardType: TextInputType.number, onChanged: (_) => _calculateInvoice()),
+                      TextFormField(controller: _discountController, decoration: const InputDecoration(labelText: 'ডিসকাউন্ট (টাকা)'), keyboardType: TextInputType.number, onChanged: (_) => _calculateInvoice()),
                       const Divider(),
                       _buildSummaryRow('সর্বমোট বিল (Grand Total):', '${_grandTotal.toStringAsFixed(2)} ৳', isBold: true),
-                      TextFormField(controller: _paidAmountController, decoration: const InputDecoration(labelText: 'নগদ গ্রহণ/Paid Amount (টাকা)'), keyboardType: TextInputType.number, onChanged: (_) => _calculateInvoice()),
+                      TextFormField(controller: _paidAmountController, decoration: const InputDecoration(labelText: 'নগদ গ্রহণ (টাকা)'), keyboardType: TextInputType.number, onChanged: (_) => _calculateInvoice()),
                       const Divider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -477,8 +454,8 @@ class _SalesPageState extends State<SalesPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 15 : 14)),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 15 : 14, color: isBold ? Colors.red.shade800 : Colors.black87)),
+          Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
         ],
       ),
     );

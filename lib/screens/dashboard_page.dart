@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'sales_page.dart';
 import 'inventory_page.dart';
-import 'memo_history_page.dart'; // নতুন মেমো ইতিহাস পেজ ইমপোর্ট করা হলো
+import 'memo_history_page.dart';
+import 'rate_setup_page.dart'; // নতুন রেট পেজ ইমপোর্ট করা হলো
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -28,7 +29,6 @@ class DashboardPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ওয়েলকাম ব্যানার
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -52,7 +52,6 @@ class DashboardPage extends StatelessWidget {
               const Text('প্রধান মেনু:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 15),
               
-              // মেনু গ্রিড ভিউ (এখন ৩টি বাটন করা হলো)
               GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
@@ -79,7 +78,14 @@ class DashboardPage extends StatelessWidget {
                     title: 'মেমো সার্চ\n(ইতিহাস ও খোঁজ)',
                     icon: Icons.manage_search,
                     color: Colors.purple.shade700,
-                    page: const MemoHistoryPage(), // ৩ নম্বর বাটন কানেক্ট হলো
+                    page: const MemoHistoryPage(),
+                  ),
+                  _buildMenuCard(
+                    context,
+                    title: 'আজকের দর\n(রেট সেটআপ)',
+                    icon: Icons.currency_exchange,
+                    color: Colors.amber.shade900,
+                    page: const RateSetupPage(), // ৪ নম্বর বাটন কানেক্ট হলো
                   ),
                 ],
               ),

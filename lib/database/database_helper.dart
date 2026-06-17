@@ -19,8 +19,8 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-    // অ্যাডভান্সড মেটাল ও এক্সচেঞ্জ সাপোর্ট যুক্ত করায় ভার্সন ৩ করা হলো
-    return await openDatabase(path, version: 3, onCreate: _createDB, onUpgrade: _upgradeDB);
+    // প্রতিদিনের রেট টেবিল যুক্ত করায় ভার্সন ৪ করা হলো
+    return await openDatabase(path, version: 4, onCreate: _createDB, onUpgrade: _upgradeDB);
   }
 
   Future _createDB(Database db, int version) async {
@@ -42,8 +42,11 @@ class DatabaseHelper {
     )
     ''');
 
-    // অ্যাডভান্সড জুয়েলারি আইটেম টেবিল (সোনা/রূপা এবং এক্সচেঞ্জ ডাটা সহ)
+    // জুয়েলারি আইটেম টেবিল
     await _createJewelryItemsTable(db);
+    
+    // প্রতিদিনের রেট টেবিল
+    await _createRatesTable(db);
   }
 
   Future _createJewelryItemsTable(Database db) async {
@@ -71,11 +74,23 @@ class DatabaseHelper {
     )
     ''');
   }
+
+  Future _createRatesTable(Database db) async {
+    await db.execute('''
+    CREATE TABLE gold_rates (
+      karat TEXT PRIMARY KEY,
+      rate REAL NOT NULL
+    )
+    ''');
+  }
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 3) {
-      // পুরাতন টেবিল ড্রপ করে নতুন স্ট্রাকচারে মেটাল ও এক্সচেঞ্জ ফিল্ড সহ তৈরি করা
       await db.execute('DROP TABLE IF EXISTS jewelry_items');
       await _createJewelryItemsTable(db);
+    }
+    if (oldVersion < 4) {
+      // ভার্সন ৪-এ আপগ্রেড করার সময় রেট টেবিল তৈরি করা হলো
+      await _createRatesTable(db);
     }
   }
 
@@ -105,6 +120,44 @@ class DatabaseHelper {
   Future<int> deleteJewelryItem(int id) async {
     final db = await instance.database;
     return await db.delete('jewelry_items', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ==================== প্রতিদিনের বাজুস রেট (Gold Rates) মেথডসমূহ ====================
+
+  // ১. কোনো নির্দিষ্ট ক্যারেটের রেট সেভ বা আপডেট করা
+  Future<void> saveRate(String karat, double rate) async {
+    final db = await instance.database;
+    await db.insert(
+      'gold_rates',
+      {'karat': karat, 'rate': rate},
+      conflictAlgorithm: ConflictAlgorithm.replace, // রেট আগে থাকলে তা নতুন রেট দিয়ে রিপ্লেস হবে
+    );
+  }
+
+  // ২. কোনো নির্দিষ্ট ক্যারেটের আজকের রেট কত তা তুলে আনা
+  Future<double> getRateByKarat(String karat) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'gold_rates',
+      where: 'karat = ?',
+      whereArgs: [karat],
+    );
+    if (maps.isNotEmpty) {
+      return (maps.first['rate'] as num).toDouble();
+    }
+    return 0.0; // রেট সেট করা না থাকলে ডিফল্ট ০ টাকা দেখাবে
+  }
+
+  // ৩. সব ক্যারেটের রেটের তালিকা একসাথে ম্যাপ আকারে নিয়ে আসা
+  Future<Map<String, double>> fetchAllRates() async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query('gold_rates');
+    
+    Map<String, double> ratesMap = {};
+    for (var row in maps) {
+      ratesMap[row['karat'] as String] = (row['rate'] as num).toDouble();
+    }
+    return ratesMap;
   }
   // ==================== মেমো (Memo) মেথডসমূহ ====================
 
@@ -139,11 +192,12 @@ class DatabaseHelper {
         paidAmount: (json['paidAmount'] as num).toDouble(),
         dueAmount: (json['dueAmount'] as num).toDouble(),
         items: items,
+        exchangeItems: const [], // সামঞ্জস্য বজায় রাখার জন্য খালি লিস্ট
       );
     }).toList();
   }
 
-  // কাস্টম অ্যাডভান্সড মেমো সার্চ (নাম, মোবাইল, ঠিকানা বা মেমো নাম্বার দিয়ে খোঁজা)
+  // কাস্টম অ্যাডভান্সড মেমো সার্চ
   Future<List<Memo>> searchMemos(String query) async {
     final db = await instance.database;
     final result = await db.query(
@@ -169,6 +223,7 @@ class DatabaseHelper {
         paidAmount: (json['paidAmount'] as num).toDouble(),
         dueAmount: (json['dueAmount'] as num).toDouble(),
         items: items,
+        exchangeItems: const [],
       );
     }).toList();
   }
