@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sales_app/screens/sales_page.dart';
-import 'package:sales_app/screens/inventory_page.dart'; // নতুন ইনভেন্টরি পেজ ইমপোর্ট করা হলো
+import 'package:sales_app/screens/dashboard_page.dart'; // নতুন ড্যাশবোর্ড পেজ ইমপোর্ট করা হলো
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +18,7 @@ class JewelryPosApp extends StatelessWidget {
         primarySwatch: Colors.amber,
         useMaterial3: true,
       ),
-      home: const InventoryPage(), // অ্যাপ চালু হলে এখন প্রথমে ইনভেন্টরি পেজ আসবে
+      home: const DashboardPage(), // অ্যাপ চালু হলে এখন প্রথমে ড্যাশবোর্ড পেজ আসবে
     );
   }
 }
-
