@@ -7,12 +7,15 @@ class Memo {
   String customerPhone;
   String customerAddress;
   String date;
-  List<JewelryItem> items;
+  
   double subTotal;
   double discount;
   double grandTotal;
   double paidAmount;
   double dueAmount;
+  
+  List<JewelryItem> items; // বিক্রিত নতুন গহনার তালিকা
+  List<JewelryItem> exchangeItems; // কাস্টমারের জমা দেওয়া পুরাতন/পাকা গহনার তালিকা (নতুন যুক্ত হলো)
 
   Memo({
     this.id,
@@ -21,12 +24,13 @@ class Memo {
     required this.customerPhone,
     required this.customerAddress,
     required this.date,
-    required this.items,
     required this.subTotal,
     required this.discount,
     required this.grandTotal,
     required this.paidAmount,
     required this.dueAmount,
+    required this.items,
+    required this.exchangeItems, // বাধ্যতামূলক করা হলো
   });
 
   Map<String, dynamic> toMap() {

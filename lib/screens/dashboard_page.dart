@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'sales_page.dart';
 import 'inventory_page.dart';
+import 'memo_history_page.dart'; // নতুন মেমো ইতিহাস পেজ ইমপোর্ট করা হলো
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -51,7 +52,7 @@ class DashboardPage extends StatelessWidget {
               const Text('প্রধান মেনু:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 15),
               
-              // মেনু গ্রিড ভিউ
+              // মেনু গ্রিড ভিউ (এখন ৩টি বাটন করা হলো)
               GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
@@ -73,6 +74,13 @@ class DashboardPage extends StatelessWidget {
                     color: Colors.blue.shade700,
                     page: const InventoryPage(),
                   ),
+                  _buildMenuCard(
+                    context,
+                    title: 'মেমো সার্চ\n(ইতিহাস ও খোঁজ)',
+                    icon: Icons.manage_search,
+                    color: Colors.purple.shade700,
+                    page: const MemoHistoryPage(), // ৩ নম্বর বাটন কানেক্ট হলো
+                  ),
                 ],
               ),
             ],
@@ -81,6 +89,7 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildMenuCard(BuildContext context, {required String title, required IconData icon, required Color color, required Widget page}) {
     return InkWell(
       onTap: () {
@@ -103,15 +112,15 @@ class DashboardPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 28,
+                radius: 26,
                 backgroundColor: color.withOpacity(0.1),
-                child: Icon(icon, size: 32, color: color),
+                child: Icon(icon, size: 28, color: color),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87, height: 1.3),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87, height: 1.3),
               ),
             ],
           ),
